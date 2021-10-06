@@ -1,25 +1,40 @@
-import logo from './logo.svg';
-import './App.css';
+import axios from "axios";
+import { useEffect, useState } from "react";
+import "./App.css";
+import Content from "./Components/Content";
+import { SearchText } from "./Components/context";
+import Form from "./Components/Form";
 
-function App() {
+const App = () => {
+  const url =
+    "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=30&page=1&sparkline=false";
+  const [searchText, setSearchText] = useState("");
+  const [coinData, setCoinData] = useState([]);
+  useEffect(() => {
+    const getCoinData = async () => {
+      await axios
+        .get(url)
+        .then((res) => {
+          setCoinData(res.data);
+          console.log(res.data);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    };
+    getCoinData();
+  }, []);
+  const filterSearchText = coinData.filter((coin) => {
+    return coin.name.toLowerCase().includes(searchText.toLowerCase());
+  });
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <SearchText.Provider value={{ searchText, setSearchText }}>
+      <div className="min-h-screen overflow-x-hidden bg-gray-900 ">
+        <Form filterSearchText={filterSearchText} />
+        <Content coinData={filterSearchText} />
+      </div>
+    </SearchText.Provider>
   );
-}
+};
 
 export default App;
